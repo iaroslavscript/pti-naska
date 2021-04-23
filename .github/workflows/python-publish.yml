@@ -4,13 +4,11 @@
 name: Python package
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  release:
+    types: [created]
 
 jobs:
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
     strategy:
@@ -30,14 +28,11 @@ jobs:
         python3 -m pip install --upgrade pip
         if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
 
-    - name: Lint with tox
+    - name: build and publish to PYPI
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        make lint
-
-    - name: Tests with tox
-      run: |
-        make test
-
-    - name: Test package buildable
-      run: |
+        make clean
         make build
+        python3 -m twine upload dist/*
